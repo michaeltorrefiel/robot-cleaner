@@ -54,35 +54,40 @@ namespace RobotCleaner
     public void Display(int robotX, int robotY)
     {
       // display the 2d grid, it accepts the location of the robot in x and y
-      Console.Clear();
-      Console.WriteLine("Vacuum cleaner robot simulation");
-      Console.WriteLine("--------------------------------");
-      Console.WriteLine("Legends: #=Obstacles, D=Dirt, .=Empty, R=Robot, C=Cleaned");
-
-      //display the grid using loop
-      for (int y = 0; y < this.Height; y++)
+      try
       {
-        for (int x = 0; x < this.Width; x++)
+        Console.Clear();
+        Console.WriteLine("Vacuum cleaner robot simulation");
+        Console.WriteLine("--------------------------------");
+        Console.WriteLine("Legends: #=Obstacles, D=Dirt, .=Empty, R=Robot, C=Cleaned");
+
+        //display the grid using loop
+        for (int y = 0; y < this.Height; y++)
         {
-          if( x==robotX && y == robotY)
+          for (int x = 0; x < this.Width; x++)
           {
-            Console.Write("R ");
-          }
-          else
-          {
-            switch(_grid[x,y])
+            if( x==robotX && y == robotY)
             {
-              case CellType.Empty: Console.Write(". "); break;
-              case CellType.Dirt: Console.Write("D "); break;
-              case CellType.Obstacle: Console.Write("# "); break;
-              case CellType.Cleaned: Console.Write("C "); break;
+              Console.Write("R ");
+            }
+            else
+            {
+              switch(_grid[x,y])
+              {
+                case CellType.Empty: Console.Write(". "); break;
+                case CellType.Dirt: Console.Write("D "); break;
+                case CellType.Obstacle: Console.Write("# "); break;
+                case CellType.Cleaned: Console.Write("C "); break;
+              }
             }
           }
-        }
-        Console.WriteLine();
-      } //outer for loop
-      // add delay
-      Thread.Sleep(200);
+          Console.WriteLine();
+        } //outer for loop
+      }
+      catch (System.IO.IOException)
+      {
+        // Ignore console I/O issues in non-interactive/test environments
+      }
     } // display method
   }//class map
   public interface IStrategy
@@ -158,25 +163,59 @@ namespace RobotCleaner
     }
   }
 
+ public class PerimeterHuggerStrategy : IStrategy
+  {
+    public void Clean(Robot robot)
+    {
+        int x = 0;
+        while (x < robot.Map.Width){
+            robot.Move(robot.X + 1, robot.Y);
+            robot.CleanCurrentSpot();
+            x+=1;
+        }
+        
+
+        int y = 0;
+        while (y < robot.Map.Height){
+            robot.Move(robot.X, robot.Y + 1);
+            robot.CleanCurrentSpot();
+            y+=1;
+        }
+
+        while (x > 0){
+            robot.Move(robot.X - 1, robot.Y);
+            robot.CleanCurrentSpot();
+            x-=1;
+        }
+
+        while (y > 0){
+            robot.Move(robot.X, robot.Y - 1);
+            robot.CleanCurrentSpot();
+            y-=1;
+        }
+    }
+  }
+
   public class Program
   {
 
-    public static void Main(string[] args){
+    public static void Main(string[] args)
+    {
       Console.WriteLine("Initialize robot");
 
 
-      IStrategy some_strategy = new SomeStrategy();
+      IStrategy some_strategy = new PerimeterHuggerStrategy();
 
       Map map = new Map(20, 10);
       // map.Display( 10,10);
 
-      map.AddDirt(5,3);
+      map.AddDirt(5, 3);
       map.AddDirt(10, 8);
-      map.AddObstacle(2,5);
-      map.AddObstacle(12,1);
-      map.Display(11,8);
+      map.AddObstacle(2, 5);
+      map.AddObstacle(12, 1);
+      map.Display(11, 8);
 
-      Robot robot = new Robot(map,some_strategy);
+      Robot robot = new Robot(map, some_strategy);
 
       robot.StartCleaning();
 
