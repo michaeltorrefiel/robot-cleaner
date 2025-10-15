@@ -138,22 +138,46 @@ namespace RobotCleaner
     }
   }
 
- public class SomeStrategy : IStrategy
+  public class SpiralStrategy : IStrategy
   {
     public void Clean(Robot robot)
     {
-        int direction = 1; // 1 = right, -1 = left
-        for (int y = 0; y < robot.Map.Height; y++)
+        int r = 1;
+        int d = 1;
+        int l = 2;
+        int u = 2;
+        int totalMove = robot.Map.Width * robot.Map.Height;
+        int move = 0;
+        while (move < totalMove)
         {
-            int startX = (direction == 1) ? 0 : robot.Map.Width - 1;
-            int endX = (direction == 1) ? robot.Map.Width : -1;
-            
-            for (int x = startX; x != endX; x += direction)
+            for (int i = 0; i < r; i++)
             {
-                robot.Move(x, y);
+                robot.Move(robot.X + 1, robot.Y);
                 robot.CleanCurrentSpot();
             }
-            direction *= -1; // Reverse direction for the next row
+
+            for (int i = 0; i < d; i++)
+            {
+                robot.Move(robot.X, robot.Y + 1);
+                robot.CleanCurrentSpot();
+            }
+            
+            for (int i = 0; i < l; i++)
+            {
+                robot.Move(robot.X - 1, robot.Y);
+                robot.CleanCurrentSpot();
+            }
+            
+            for (int i = 0; i < u; i++)
+            {
+                robot.Move(robot.X, robot.Y - 1);
+                robot.CleanCurrentSpot();
+            }
+            r += 2;
+            d += 2;
+            l += 2;
+            u += 2;
+            move += 4;
         }
     }
   }
@@ -162,25 +186,30 @@ namespace RobotCleaner
   {
 
     public static void Main(string[] args){
-      Console.WriteLine("Initialize robot");
+        Console.WriteLine("Initialize robot");
+        
+        int x = 10;
+        int y = 10;
 
 
-      IStrategy some_strategy = new SomeStrategy();
+        IStrategy some_strategy = new SpiralStrategy();
 
-      Map map = new Map(20, 10);
-      // map.Display( 10,10);
+        Map map = new Map(x, y);
+        // map.Display( 10,10);
 
-      map.AddDirt(5,3);
-      map.AddDirt(10, 8);
-      map.AddObstacle(2,5);
-      map.AddObstacle(12,1);
-      map.Display(11,8);
+        map.AddDirt(5,3);
+        map.AddDirt(8, 8);
+        // map.AddObstacle(2,5);
+        // map.AddObstacle(12,1);
+        // map.Display(9,9);
 
-      Robot robot = new Robot(map,some_strategy);
+        Robot robot = new Robot(map,some_strategy);
+        robot.X = (x/2) - 1;
+        robot.Y = (y/2) - 1;
 
-      robot.StartCleaning();
+        robot.StartCleaning();
 
-      Console.WriteLine("Done.");
+        Console.WriteLine("Done.");
     }
   }
 }
